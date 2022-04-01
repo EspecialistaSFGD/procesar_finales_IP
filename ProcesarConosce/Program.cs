@@ -21,6 +21,9 @@ namespace ProcesarConosce
             var puertoSftp = "";
             var usuarioSftp = "";
             var claveSftp = "";
+            var rutaOrigen = "";
+            var rutaDestino = "";
+
             try
             {
                 conexionBd = string.IsNullOrEmpty(args[0]) ? "" : args[0];
@@ -34,6 +37,8 @@ namespace ProcesarConosce
                 puertoSftp = string.IsNullOrEmpty(args[8]) ? "" : args[8];
                 usuarioSftp = string.IsNullOrEmpty(args[9]) ? "" : args[9];
                 claveSftp = string.IsNullOrEmpty(args[10]) ? "" : args[10];
+                rutaOrigen = string.IsNullOrEmpty(args[11]) ? "" : args[11];
+                rutaDestino = string.IsNullOrEmpty(args[12]) ? "" : args[12];
             }
             catch (Exception)
             {
@@ -61,15 +66,17 @@ namespace ProcesarConosce
                 Host = !string.IsNullOrEmpty(hostSftp) ? hostSftp : Configuration.GetSection("HostSftp").Value.ToString(),
                 Port = int.Parse(!string.IsNullOrEmpty(puertoSftp) ? puertoSftp : Configuration.GetSection("PuertoSftp").Value.ToString()),
                 Username = !string.IsNullOrEmpty(usuarioSftp) ? usuarioSftp : Configuration.GetSection("UsuarioSftp").Value.ToString(),
-                Password = !string.IsNullOrEmpty(claveSftp) ? claveSftp : Configuration.GetSection("ClaveSftp").Value.ToString()
+                Password = !string.IsNullOrEmpty(claveSftp) ? claveSftp : Configuration.GetSection("ClaveSftp").Value.ToString(),
+                SourceRoute = !string.IsNullOrEmpty(rutaOrigen) ? rutaOrigen : Configuration.GetSection("RutaOrigen").Value.ToString(),
+                DestinationRoute = !string.IsNullOrEmpty(rutaDestino) ? rutaDestino : Configuration.GetSection("RutaDestino").Value.ToString()
             };
-            EjecutarProceso(conexionBd, mailConfiguration, sftprequest)
-                .GetAwaiter()
-                .GetResult();
+            EjecutarProceso(conexionBd, mailConfiguration, sftprequest);
+                //.GetAwaiter()
+                //.GetResult();
         }
 
 
-        static async Task EjecutarProceso(string conexion, Mail mail, FileManager.SftpRequest sftp)
+        static /*async Task*/ void EjecutarProceso(string conexion, Mail mail, FileManager.SftpRequest sftp)
         {
             try
             {
@@ -82,6 +89,43 @@ namespace ProcesarConosce
                 var fileManager = FileManager.GetNewFileManager();
                 var request = new ProxyManager.Request();
                 var repositorio = new Repositorio(conexion);
+
+
+                var rutaBaseOrigen = sftp.SourceRoute;
+                var rutaBaseDestino = sftp.DestinationRoute;
+
+                Console.WriteLine($"Descargando los reportes de contratos de CONOSCE");
+                sftp.SourceRoute = $"{rutaBaseOrigen}conosce_contratos_s3";
+                sftp.DestinationRoute = $"{rutaBaseDestino}conosce_contratos_s3";
+                var haDescargadoContratos = repositorio.RecuperarReportesConosce(sftp);
+
+                if (haDescargadoContratos)
+                {
+                    Console.WriteLine($"Los reportes de contratos han sido descargados correctamente de CONOSCE");
+                }
+
+                Console.WriteLine($"Descargando los reportes de cronogramas de CONOSCE");
+                sftp.SourceRoute = $"{rutaBaseOrigen}conosce_cronograma";
+                sftp.DestinationRoute = $"{rutaBaseDestino}conosce_cronograma";
+
+                var haDescargadoCronogramas = repositorio.RecuperarReportesConosce(sftp);
+
+                if (haDescargadoCronogramas)
+                {
+                    Console.WriteLine($"Los reportes de cronogramas han sido descargados correctamente de CONOSCE");
+                }
+
+                Console.WriteLine($"Descargando los reportes especiales de CONOSCE");
+                sftp.SourceRoute = $"{rutaBaseOrigen}reporte_especial";
+                sftp.DestinationRoute = $"{rutaBaseDestino}reporte_especial";
+
+                var haDescargadoReporteEspecial = repositorio.RecuperarReportesConosce(sftp);
+
+                if (haDescargadoReporteEspecial)
+                {
+                    Console.WriteLine($"Los reportes especiales han sido descargados correctamente de CONOSCE");
+                }
+
 
                 return;
             }

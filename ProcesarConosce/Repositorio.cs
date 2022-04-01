@@ -4,7 +4,10 @@ using MimeKit;
 using MimeKit.Text;
 using NextSIT.Utility;
 using System;
-using SshNet;
+using Renci.SshNet;
+using System.Collections.Generic;
+using Renci.SshNet.Sftp;
+using System.IO;
 
 namespace ProcesarConosce
 {
@@ -25,12 +28,53 @@ namespace ProcesarConosce
         {
             try
             {
+                Directory.CreateDirectory(sftpRequest.DestinationRoute);
+
+                using (var client = new SftpClient(sftpRequest.Host, sftpRequest.Port ?? 22, sftpRequest.Username, sftpRequest.Password))
+                {
+                    try
+                    {
+                        client.Connect();
+                        DescargarDirectorio(client, sftpRequest.SourceRoute, sftpRequest.DestinationRoute);
+                        client.Disconnect();
+                    }
+                    catch (Exception exception)
+                    {
+                        throw new Exception(exception.Message);
+                    }
+                }
                 return true;
             }
             catch (Exception exception)
             {
                 Console.WriteLine($"Ocurrio un problema al recuperar los reportes de conosce. Detalle del error => { exception.Message }");
                 return false;
+            }
+        }
+
+
+        public void DescargarDirectorio(SftpClient clienteSftp, string rutaOrigen, string rutaDestino)
+        {
+            Directory.CreateDirectory(rutaDestino);
+            IEnumerable<SftpFile> archivos = clienteSftp.ListDirectory(rutaOrigen);
+            foreach (SftpFile archivoSftp in archivos)
+            {
+                if ((archivoSftp.Name != ".") && (archivoSftp.Name != ".."))
+                {
+                    string archivoOrigen = rutaOrigen + "/" + archivoSftp.Name;
+                    string archivoDestino = Path.Combine(rutaDestino, archivoSftp.Name);
+                    if (archivoSftp.IsDirectory)
+                    {
+                        DescargarDirectorio(clienteSftp, archivoOrigen, archivoDestino);
+                    }
+                    else
+                    {
+                        using (Stream fileStream = File.Create(archivoDestino))
+                        {
+                            clienteSftp.DownloadFile(archivoOrigen, fileStream);
+                        }
+                    }
+                }
             }
         }
 
