@@ -8,6 +8,7 @@ using Renci.SshNet;
 using System.Collections.Generic;
 using Renci.SshNet.Sftp;
 using System.IO;
+using System.Linq;
 
 namespace ProcesarConosce
 {
@@ -28,13 +29,14 @@ namespace ProcesarConosce
         {
             try
             {
-                Directory.CreateDirectory(sftpRequest.DestinationRoute);
+                Console.WriteLine($"Directorio en la ubicacion {sftpRequest.DestinationRoute} generado correctamente");
 
                 using (var client = new SftpClient(sftpRequest.Host, sftpRequest.Port ?? 22, sftpRequest.Username, sftpRequest.Password))
                 {
                     try
                     {
                         client.Connect();
+                        Console.WriteLine($"Inicio de descarga de archivos y directorios del directorio {sftpRequest.SourceRoute}");
                         DescargarDirectorio(client, sftpRequest.SourceRoute, sftpRequest.DestinationRoute);
                         client.Disconnect();
                     }
@@ -57,14 +59,17 @@ namespace ProcesarConosce
         {
             Directory.CreateDirectory(rutaDestino);
             IEnumerable<SftpFile> archivos = clienteSftp.ListDirectory(rutaOrigen);
+            Console.WriteLine($"Listado de archivos en {rutaOrigen}:\n {string.Join('\n',archivos.Select(x => $"  *  {x.Name}"))}");
             foreach (SftpFile archivoSftp in archivos)
             {
                 if ((archivoSftp.Name != ".") && (archivoSftp.Name != ".."))
                 {
-                    string archivoOrigen = rutaOrigen + "/" + archivoSftp.Name;
-                    string archivoDestino = Path.Combine(rutaDestino, archivoSftp.Name);
+                    string archivoOrigen = rutaOrigen + archivoSftp.Name;
+                    string archivoDestino = rutaDestino + archivoSftp.Name;
                     if (archivoSftp.IsDirectory)
                     {
+                        archivoOrigen += "/";
+                        archivoDestino += "\\";
                         DescargarDirectorio(clienteSftp, archivoOrigen, archivoDestino);
                     }
                     else

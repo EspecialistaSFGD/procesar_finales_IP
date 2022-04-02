@@ -78,25 +78,20 @@ namespace ProcesarConosce
 
         static /*async Task*/ void EjecutarProceso(string conexion, Mail mail, FileManager.SftpRequest sftp)
         {
+            var mensajeRespuesta = @"<h3>Proceso de extraccion de reportes desde CONOSCE</h3><p>mensaje_respuesta</p>";
+            var repositorio = new Repositorio(conexion);
             try
             {
                 Console.WriteLine($"--------------------------------------------------------------------------------");
                 Console.WriteLine($"    Proceso de extraccion de reportes desde CONOSCE para el anio configurado");
                 Console.WriteLine($"---------------------------------------------------------------------------------");
-                var mensajeRespuesta = @"<h3>Proceso de extraccion de reportes desde CONOSCE</h3><p>mensaje_respuesta</p>";
-                var proxyManager = ProxyManager.GetNewProxyManager();
-                var typeConvertionsManager = TypeConvertionManager.GetNewTypeConvertionManager();
-                var fileManager = FileManager.GetNewFileManager();
-                var request = new ProxyManager.Request();
-                var repositorio = new Repositorio(conexion);
-
 
                 var rutaBaseOrigen = sftp.SourceRoute;
                 var rutaBaseDestino = sftp.DestinationRoute;
 
                 Console.WriteLine($"Descargando los reportes de contratos de CONOSCE");
-                sftp.SourceRoute = $"{rutaBaseOrigen}conosce_contratos_s3";
-                sftp.DestinationRoute = $"{rutaBaseDestino}conosce_contratos_s3";
+                sftp.SourceRoute = $"{rutaBaseOrigen}conosce_contratos_s3/";
+                sftp.DestinationRoute = $"{rutaBaseDestino}conosce_contratos_s3\\";
                 var haDescargadoContratos = repositorio.RecuperarReportesConosce(sftp);
 
                 if (haDescargadoContratos)
@@ -105,8 +100,8 @@ namespace ProcesarConosce
                 }
 
                 Console.WriteLine($"Descargando los reportes de cronogramas de CONOSCE");
-                sftp.SourceRoute = $"{rutaBaseOrigen}conosce_cronograma";
-                sftp.DestinationRoute = $"{rutaBaseDestino}conosce_cronograma";
+                sftp.SourceRoute = $"{rutaBaseOrigen}conosce_cronograma/";
+                sftp.DestinationRoute = $"{rutaBaseDestino}conosce_cronograma\\";
 
                 var haDescargadoCronogramas = repositorio.RecuperarReportesConosce(sftp);
 
@@ -116,8 +111,8 @@ namespace ProcesarConosce
                 }
 
                 Console.WriteLine($"Descargando los reportes especiales de CONOSCE");
-                sftp.SourceRoute = $"{rutaBaseOrigen}reporte_especial";
-                sftp.DestinationRoute = $"{rutaBaseDestino}reporte_especial";
+                sftp.SourceRoute = $"{rutaBaseOrigen}reporte_especial/";
+                sftp.DestinationRoute = $"{rutaBaseDestino}reporte_especial\\";
 
                 var haDescargadoReporteEspecial = repositorio.RecuperarReportesConosce(sftp);
 
@@ -126,11 +121,18 @@ namespace ProcesarConosce
                     Console.WriteLine($"Los reportes especiales han sido descargados correctamente de CONOSCE");
                 }
 
+                var detalle = $"El proceso de extracción de reportes desde CONOSCE se ha completado correctamente, puede revisar los archivos en el servidor o consultar directamente desde la base de datos y/o Web del Mapa Inversiones</p>";
+                mensajeRespuesta = mensajeRespuesta.Replace("mensaje_respuesta", detalle);
+                repositorio.SendMail(mail, "Proceso de extraccion de reportes desde CONOSCE", mensajeRespuesta);
 
                 return;
             }
             catch (Exception exception)
             {
+                var detalle = $"<p>Ocurrió un problema durante el proceso de extracción de reportes. Detalle del error : {exception.Message}</p>";
+                mensajeRespuesta = mensajeRespuesta.Replace("mensaje_respuesta", detalle);
+                repositorio.SendMail(mail, "Proceso de extraccion de reportes desde CONOSCE", mensajeRespuesta);
+
                 Console.WriteLine(exception.Message);
                 throw;
             }
