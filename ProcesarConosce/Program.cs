@@ -154,7 +154,7 @@ namespace ProcesarConosce
 
 
                 var detalle = $"El proceso de extracción de reportes desde CONOSCE se ha completado correctamente, puede revisar los archivos en el servidor o consultar directamente desde la base de datos y/o Web del Mapa Inversiones</p>";
-                mensajeRespuesta = mensajeRespuesta.Replace("mensaje_respuesta", detalle);
+                mensajeRespuesta = mensajeRespuesta.Replace("mensaje_ok", detalle);
                 repositorio.SendMail(mail, "Proceso de Carga Masiva de Datos de Proyectos", mensajeRespuesta);
 
                 return;
@@ -162,7 +162,7 @@ namespace ProcesarConosce
             catch (Exception exception)
             {
                 var detalle = $"Ocurrió un problema durante el proceso de extracción de reportes. Detalle del error : {exception.Message}";
-                mensajeRespuesta = mensajeRespuesta.Replace("mensaje_respuesta", detalle);
+                mensajeRespuesta = mensajeRespuesta.Replace("mensaje_error", detalle);
                 repositorio.SendMail(mail, "Proceso de Carga Masiva de Datos de Proyectos", mensajeRespuesta);
 
                 Console.WriteLine(exception.Message);

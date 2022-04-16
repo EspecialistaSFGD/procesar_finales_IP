@@ -64,7 +64,7 @@ namespace ProcesarConosce
         {
             try
             {
-
+                Console.WriteLine($"Ruta base del directorio de busqueda => {urlBase}; Concepto de busqueda => {$"CONOSCE_CONTRATOS{anioProceso}_?.xlsx"}");
                 var directorio = new DirectoryInfo(urlBase);
                 var dataTableContrato = new DataTable();
                 var indice = 0;
