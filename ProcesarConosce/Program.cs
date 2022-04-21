@@ -101,7 +101,7 @@ namespace ProcesarConosce
                 sftp.SourceRoute = $"{rutaBaseOrigen}conosce_contratos_s3/";
                 sftp.DestinationRoute = $"{rutaBaseDestino}conosce_contratos_s3\\";
 
-                var haDescargadoContratos = true;//repositorio.RecuperarReportesConosce(sftp);
+                var haDescargadoContratos = repositorio.RecuperarReportesConosce(sftp);
 
                 if (!haDescargadoContratos)
                 {
@@ -119,7 +119,7 @@ namespace ProcesarConosce
                 sftp.SourceRoute = $"{rutaBaseOrigen}conosce_cronograma/";
                 sftp.DestinationRoute = $"{rutaBaseDestino}conosce_cronograma\\";
 
-                var haDescargadoCronogramas = true;//repositorio.RecuperarReportesConosce(sftp);
+                var haDescargadoCronogramas = repositorio.RecuperarReportesConosce(sftp);
 
                 if (!haDescargadoCronogramas)
                 {
@@ -138,7 +138,7 @@ namespace ProcesarConosce
                 sftp.SourceRoute = $"{rutaBaseOrigen}reporte_especial/";
                 sftp.DestinationRoute = $"{rutaBaseDestino}reporte_especial\\";
 
-                var haDescargadoReporteEspecial = true;//repositorio.RecuperarReportesConosce(sftp);
+                var haDescargadoReporteEspecial = repositorio.RecuperarReportesConosce(sftp);
 
                 if (!haDescargadoReporteEspecial)
                 {
