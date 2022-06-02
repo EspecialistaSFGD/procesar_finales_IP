@@ -85,7 +85,7 @@ namespace ProcesarConosce
 
         static async Task EjecutarProceso(string conexion, Mail mail, FileManager.SftpRequest sftp, string anioProceso)
         {
-            var mensajeRespuesta = @"<h3>Proceso de extraccion de reportes desde CONOSCE</h3><h4>Procesos conformes</h4>mensaje_ok<h4>Procesos Errados</h4>mensaje_error";
+            var mensajeRespuesta = @"<h2>Proceso de extraccion de reportes desde CONOSCE</h2><h3>Procesos conformes</h3>mensaje";
 
             var repositorio = new Repositorio(conexion);
             try
@@ -153,16 +153,16 @@ namespace ProcesarConosce
                 }
 
 
-                var detalle = $"El proceso de extracción de reportes desde CONOSCE se ha completado correctamente, puede revisar los archivos en el servidor o consultar directamente desde la base de datos y/o Web del Mapa Inversiones</p>";
-                mensajeRespuesta = mensajeRespuesta.Replace("mensaje_ok", detalle);
+                var detalle = $"<p>El proceso de extracción de reportes desde CONOSCE se ha completado correctamente, puede revisar los archivos en el servidor o consultar directamente desde la base de datos y Web del Mapa Inversiones</p>";
+                mensajeRespuesta = mensajeRespuesta.Replace("mensaje", detalle);
                 repositorio.SendMail(mail, "Proceso de Carga Masiva de Datos de Proyectos", mensajeRespuesta);
 
                 return;
             }
             catch (Exception exception)
             {
-                var detalle = $"Ocurrió un problema durante el proceso de extracción de reportes. Detalle del error : {exception.Message}";
-                mensajeRespuesta = mensajeRespuesta.Replace("mensaje_error", detalle);
+                var detalle = $"<p>Ocurrió un problema durante el proceso de extracción de reportes. Detalle del error : {exception.Message}</p>";
+                mensajeRespuesta = mensajeRespuesta.Replace("mensaje", detalle);
                 repositorio.SendMail(mail, "Proceso de Carga Masiva de Datos de Proyectos", mensajeRespuesta);
 
                 Console.WriteLine(exception.Message);
